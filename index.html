@@ -1,0 +1,1436 @@
+<title>Benjamin Rigó — Work</title>
+<style>
+  /* Three colors, total: a near-black ground, a near-white ink, and one
+     mid gray for dim/secondary text. Tiles and tags simply invert
+     bg/ink rather than introducing separate tokens. System font stack —
+     no webfont request. */
+  :root {
+    --bg: #0d0d0d;
+    --ink: #e6e6e6;
+    --ink-dim: #808080;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* No manual text/image selection anywhere on the page — the email
+     address is still copyable, but only via its own click handler,
+     which doesn't rely on selection. */
+  * {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    height: 100%;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  a { color: inherit; text-decoration: none; cursor: none; }
+  a:hover { color: var(--ink-dim); }
+  [role="button"] { cursor: none; }
+
+  /* A two-tone ring (dark line + light line) so keyboard focus stays
+     visible against both the dark page and the light tiles — with
+     cursor:none there's no other visual signal of where focus is. */
+  a:focus-visible, [role="button"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink);
+    border-radius: 2px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  #cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--ink-dim);
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transform: translate3d(-100px, -100px, 0) translate(-50%, -50%);
+    transition: width 150ms cubic-bezier(0.2, 0.8, 0.2, 1), height 150ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 150ms ease;
+  }
+
+  #cursor-dot.visible { opacity: 1; }
+  #cursor-dot.hover { width: 9px; height: 9px; }
+  #cursor-dot.suppressed.visible { opacity: 0; }
+
+  #cursor-label {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    pointer-events: none;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate3d(-100px, -100px, 0) translate(-50%, -50%);
+    transition: opacity 120ms ease;
+  }
+
+  #cursor-label.visible { opacity: 1; }
+
+  /* Whole-page texture: a hair of blur plus fine grain, purely atmospheric. */
+  #page-texture {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(0.4px);
+    backdrop-filter: blur(0.4px);
+  }
+
+  #page-texture::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj4KPGZpbHRlciBpZD0ibiI+CjxmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjg1IiBudW1PY3RhdmVzPSIyIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIiByZXN1bHQ9InQiLz4KPGZlQ29sb3JNYXRyaXggaW49InQiIHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwIDAgMCAwIDEgIDAgMCAwIDAgMSAgMCAwIDAgMCAxICAwIDAgMCAwLjYgMCIvPgo8L2ZpbHRlcj4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI24pIi8+Cjwvc3ZnPg==");
+    background-size: 160px 160px;
+    opacity: 0.09;
+    mix-blend-mode: overlay;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 22px 32px;
+    flex-shrink: 0;
+  }
+
+  header .name {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  header .email {
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: none;
+    padding: 8px 6px;
+    margin: -8px -6px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  header .email:hover { color: var(--ink-dim); }
+
+  .body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  nav {
+    width: 176px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 72px 32px 0 32px;
+    gap: 36px;
+  }
+
+  nav a {
+    font-family: var(--font);
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    display: block;
+    padding: 6px 4px;
+    margin: -6px -4px;
+    border-radius: 2px;
+  }
+  nav a.current { color: var(--ink); }
+  nav a.other { color: var(--ink-dim); }
+  nav a:hover { color: var(--ink); }
+
+  .toc {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .toc:empty { display: none; margin-top: 0; }
+
+  .nav-footer {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-dim);
+    margin-top: auto;
+    padding: 24px 4px 32px 4px;
+  }
+
+  .mobile-footer { display: none; }
+
+  .toc-item {
+    font-family: var(--font);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.01em;
+    color: var(--ink-dim);
+    line-height: 1.4;
+    padding: 5px 4px;
+    margin: -5px -4px;
+    border-radius: 2px;
+    display: block;
+  }
+
+  .toc-item:hover { color: var(--ink); }
+  .toc-item.current { color: var(--ink); }
+
+  main {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main > section {
+    flex: 1;
+    min-height: 0;
+    display: none;
+    flex-direction: column;
+  }
+
+  main > section.active { display: flex; }
+
+  /* ---- Work ---- */
+
+  #view-work {
+    overflow-y: auto;
+  }
+
+  .intro {
+    font-family: var(--font);
+    max-width: 560px;
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin: 72px 48px 0 32px;
+    flex-shrink: 0;
+  }
+
+  .work-list {
+    margin-top: auto;
+  }
+
+  .section-title {
+    font-family: var(--font);
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin: 0 48px 24px 32px;
+  }
+
+  .filmstrip {
+    height: 500px;
+    flex-shrink: 0;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: var(--bg);
+  }
+
+  .col {
+    flex: 0 0 47%;
+    min-width: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 32px;
+    background: var(--ink);
+    transition: transform 200ms ease;
+  }
+
+  @media (hover: hover) {
+    .col:hover {
+      transform: scale(0.985);
+    }
+  }
+
+  .col .title {
+    font-family: var(--font);
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+    color: var(--bg);
+    max-width: 22ch;
+  }
+
+  .tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tags span {
+    font-family: var(--font);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    padding: 6px 13px;
+    border-radius: 999px;
+  }
+
+  .col .tags span {
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  /* ---- Project detail ---- */
+
+  #view-project {
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  .cs-content {
+    max-width: none;
+    padding: 72px 48px 96px 48px;
+  }
+
+  /* Bottom-of-page gradient blur on project case studies: a soft blur
+     band pinned to the bottom edge of the scroll panel, fading upward
+     to nothing, visible as you scroll down through the study. */
+  .bottom-blur-veil {
+    position: sticky;
+    bottom: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .bottom-blur-veil-inner {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(2.4px);
+    backdrop-filter: blur(2.4px);
+    -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
+    mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  }
+
+  #project-title.cs-title {
+    font-family: var(--font);
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    max-width: 20ch;
+    margin: 0;
+  }
+
+  #project-tags.tags { margin: 20px 0 0 0; }
+  #project-tags.tags span { background: var(--ink); color: var(--bg); }
+
+  .cs-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin: 36px 0 40px 0;
+  }
+
+  .cs-meta-item { max-width: 240px; }
+
+  .cs-meta-label {
+    font-family: var(--font);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+
+  .cs-meta-value {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .cs-lede {
+    font-size: 22px;
+    line-height: 1.5;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .cs-note {
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--ink-dim);
+    margin: 14px 0 0 0;
+  }
+
+  .cs-article { margin-top: 48px; }
+
+  .cs-h2 {
+    font-family: var(--font);
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    max-width: 22ch;
+    margin: 72px 0 20px 0;
+  }
+
+  .cs-article > .cs-h2:first-child { margin-top: 0; }
+
+  .cs-h3 {
+    font-family: var(--font);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin: 36px 0 10px 0;
+  }
+
+  .cs-p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    margin: 0 0 16px 0;
+  }
+
+  .cs-placeholder {
+    margin: 28px 0 32px 0;
+    padding: 18px 20px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .cs-placeholder-label {
+    font-family: var(--font);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+
+  .cs-placeholder-desc {
+    font-size: 12px;
+    line-height: 1.55;
+    font-style: italic;
+    color: var(--ink-dim);
+  }
+
+  .cs-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin: 28px 0 36px 0;
+  }
+
+  .cs-stat { min-width: 120px; }
+
+  .cs-stat-value {
+    font-family: var(--font);
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .cs-stat-label {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ink-dim);
+    max-width: 18ch;
+    margin-top: 6px;
+  }
+
+  /* ---- About ---- */
+
+  #view-about {
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  .about-pad {
+    padding: 72px 48px 96px 32px;
+  }
+
+  #view-about .intro {
+    margin: 0 0 48px 0;
+    max-width: 560px;
+  }
+
+  .about-body {
+    max-width: 640px;
+  }
+
+  .about-body p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    max-width: 62ch;
+  }
+
+  .about-body h2 {
+    font-family: var(--font);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin: 48px 0 16px 0;
+  }
+
+  .about-body h3 {
+    font-family: var(--font);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 24px 0 8px 0;
+  }
+
+  .about-body ul {
+    margin: 0 0 16px 0;
+    padding-left: 18px;
+  }
+
+  .about-body li {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+
+  .about-body li strong { color: var(--ink); font-weight: 500; }
+
+  .role {
+    margin-bottom: 28px;
+  }
+
+  .role-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .role .role-title {
+    font-family: var(--font);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+
+  .role .role-dates {
+    font-family: var(--font);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--ink-dim);
+    white-space: nowrap;
+  }
+
+  .role .role-company {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin: 4px 0 10px 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #cursor-dot, #cursor-label, .col { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* No mouse: the custom cursor has nothing to follow, and the browser's
+     own cursor is never disabled on a touch device anyway. */
+  @media (hover: none) and (pointer: coarse) {
+    html, body, a, [role="button"] { cursor: auto; }
+    #cursor-dot, #cursor-label { display: none; }
+  }
+
+  /* ---- Tablet: the tile hits its 450px min-width floor here, so it's
+     narrower/squarer than on desktop and the 30px title reads small
+     against the card. Bump it back up in this band. ---- */
+  @media (min-width: 701px) and (max-width: 1150px) {
+    .col .title { font-size: 34px; }
+  }
+
+  /* ---- Mobile / narrow viewport ---- */
+  @media (max-width: 700px) {
+    header {
+      padding: 16px 20px;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+
+    .body { flex-direction: column; }
+
+    nav {
+      width: auto;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 14px 20px;
+      gap: 20px;
+    }
+
+    .toc {
+      flex-basis: 100%;
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 16px;
+      margin-top: 4px;
+      padding: 0 0 10px 0;
+      touch-action: pan-x;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .toc::-webkit-scrollbar { display: none; }
+
+    .toc-item {
+      flex-shrink: 0;
+      max-width: none;
+      white-space: nowrap;
+    }
+
+    .intro {
+      font-size: 19px;
+      margin: 40px 20px 0 20px;
+    }
+
+    .work-list {
+      margin-top: 100px;
+    }
+
+    .nav-footer { display: none; }
+
+    .mobile-footer {
+      display: block;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--ink-dim);
+      margin: 32px 20px 40px 20px;
+    }
+
+    .section-title {
+      font-size: 19px;
+      margin: 0 20px 16px 20px;
+    }
+
+    .filmstrip {
+      flex-direction: column;
+      height: auto;
+      overflow-x: visible;
+      overflow-y: visible;
+      gap: 3px;
+    }
+
+    .col {
+      flex: none;
+      min-width: 0;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      height: auto;
+      padding: 24px 20px;
+    }
+
+    .col .title { font-size: clamp(20px, 4vw, 26px); max-width: none; }
+
+    .cs-content { padding: 40px 20px 64px 20px; }
+
+    #project-title.cs-title { font-size: 32px; max-width: none; }
+
+    .cs-lede { font-size: 17px; }
+
+    .cs-h2 { font-size: 22px; margin: 48px 0 14px 0; }
+    .cs-h3 { font-size: 17px; }
+
+    .cs-meta { gap: 24px; margin: 24px 0 28px 0; }
+    .cs-stats { gap: 24px; }
+    .cs-stat-value { font-size: 24px; }
+
+    .about-pad { padding: 40px 20px 72px 20px; }
+
+    #view-about .intro { margin: 0 0 32px 0; }
+  }
+</style>
+
+<div class="page">
+  <header>
+    <a class="name" href="#work">Benjamin Rigó</a>
+    <span class="email" id="email-copy" role="button" tabindex="0">benjaminrigodesign@gmail.com</span>
+    <span id="copy-announce" class="sr-only" aria-live="polite"></span>
+  </header>
+
+  <div class="body">
+    <nav>
+      <a href="#work" class="nav-link" data-view="work" id="nav-work">Work</a>
+      <a href="#about" class="nav-link" data-view="about">About</a>
+      <div id="project-toc" class="toc"></div>
+      <div class="nav-footer">© 2026 Benjamin Rigó. All rights reserved.</div>
+    </nav>
+
+    <main>
+      <section id="view-work">
+        <h1 class="intro">Lead product designer, 8+ years turning complex, data-heavy systems into interfaces people can actually use.</h1>
+
+        <div class="work-list">
+          <h2 class="section-title">Case Studies</h2>
+          <div class="filmstrip">
+            <a class="col" href="#work/nxlog-platform" aria-label="UX Support &amp; Module Design for Enterprise Log Management. Tags: Log Management, Enterprise SaaS">
+              <div class="title" aria-hidden="true">UX Support &amp; Module Design for Enterprise Log Management</div>
+              <div class="tags" aria-hidden="true"><span>Log Management</span><span>Enterprise SaaS</span></div>
+            </a>
+            <a class="col" href="#work/enlight" aria-label="FinTech Engagement Platform Concept &amp; AI Prototyping. Tags: Fintech, Gamification">
+              <div class="title" aria-hidden="true">FinTech Engagement Platform Concept &amp; AI Prototyping</div>
+              <div class="tags" aria-hidden="true"><span>Fintech</span><span>Gamification</span></div>
+            </a>
+            <a class="col" href="#work/bkk-payandgo" aria-label="Public Transport Ticketing Evaluation &amp; Redesign. Tags: Public Transport, Service Design">
+              <div class="title" aria-hidden="true">Public Transport Ticketing Evaluation &amp; Redesign</div>
+              <div class="tags" aria-hidden="true"><span>Public Transport</span><span>Service Design</span></div>
+            </a>
+            <a class="col" href="#work/skytree" aria-label="Multirole CO2 capture monitoring system design. Tags: Hardware, Data Visualization">
+              <div class="title" aria-hidden="true">Multirole CO2 capture monitoring system design</div>
+              <div class="tags" aria-hidden="true"><span>Hardware</span><span>Data Visualization</span></div>
+            </a>
+          </div>
+        </div>
+
+        <div class="mobile-footer">© 2026 Benjamin Rigó. All rights reserved.</div>
+      </section>
+
+      <section id="view-project">
+        <div class="cs-content">
+          <h1 id="project-title" class="cs-title"></h1>
+          <div id="project-tags" class="tags"></div>
+          <div id="project-meta" class="cs-meta"></div>
+          <p id="project-lede" class="cs-lede"></p>
+          <div id="project-article" class="cs-article"></div>
+        </div>
+        <div class="bottom-blur-veil"><div class="bottom-blur-veil-inner"></div></div>
+      </section>
+
+      <section id="view-about">
+        <div class="about-pad">
+        <h1 class="intro">Lead product designer, 8+ years turning complex, data-heavy systems into interfaces people can actually use.</h1>
+        <div class="about-body">
+          <ul>
+            <li>Proven track record leading design teams</li>
+            <li>Building tokenized design systems</li>
+            <li>Facilitating discovery through service design methodology</li>
+            <li>Advanced AI workflows (Claude Code, Claude-to-Figma automation) to accelerate research synthesis, prototyping, and engineering handoff</li>
+          </ul>
+
+          <h2>Core Competencies</h2>
+
+          <h3>Product Strategy &amp; Complex Interfaces</h3>
+          <ul>
+            <li><strong>UX/UI Design &amp; Systems:</strong> Complex web/app interfaces, native iOS/Android, data-heavy dashboards, tokenized design systems (shadcn/ui, Figma variables).</li>
+            <li><strong>Service Design &amp; Discovery:</strong> Service blueprinting, product concept workshops, user journey mapping, and research frameworks.</li>
+            <li><strong>Usability Testing &amp; Research:</strong> Qualitative/quantitative research frameworks, iterative usability testing, field research, and validation.</li>
+            <li><strong>Cross-Functional Collaboration:</strong> Direct engineering handoff, component mapping, technical feasibility assessment, and QA.</li>
+          </ul>
+
+          <h3>Leadership &amp; Operations</h3>
+          <ul>
+            <li><strong>Design Leadership:</strong> Mentoring and managing teams of 3–5 mid-to-senior designers.</li>
+            <li><strong>Project &amp; Proposal Strategy:</strong> Scope definition, project planning, proposal writing, and client alignment.</li>
+          </ul>
+
+          <h3>Next-Gen Workflows &amp; Specialized Skills</h3>
+          <ul>
+            <li><strong>AI-Assisted Design &amp; Dev Prep:</strong> Advanced Claude Code integration, Figma-Claude workflows.</li>
+            <li><strong>Brand &amp; Visual Communication:</strong> Brand strategy, visual identity, graphic design, and motion graphics.</li>
+            <li><strong>Hardware &amp; Spatial Ergonomics:</strong> Experience in physical/spatial interface ergonomics (visionOS, PHID).</li>
+          </ul>
+
+          <h2>Professional Experience</h2>
+
+          <div class="role">
+            <div class="role-head">
+              <div class="role-title">Lead Product Designer</div>
+              <div class="role-dates">Jan 2024 – Present</div>
+            </div>
+            <div class="role-company">Atlas, Rise! · Budapest, Hungary</div>
+            <ul>
+              <li>Led end-to-end product design, service design, and UX strategy for enterprise and public-sector clients (e.g., BKK Pay&amp;GO, a global card network).</li>
+              <li>Managed and mentored a team of 3–5 mid-to-senior designers across research, branding, and interface design streams.</li>
+              <li>Facilitated client discovery workshops, scoped proposals, and designed low-carbon digital products.</li>
+            </ul>
+          </div>
+
+          <div class="role">
+            <div class="role-head">
+              <div class="role-title">Product Designer</div>
+              <div class="role-dates">Oct 2022 – Sep 2023</div>
+            </div>
+            <div class="role-company">AR Analytics Ltd. · Budapest, Hungary</div>
+            <ul>
+              <li>Led augmented reality platform design and spatial UI frameworks tailored for Apple's visionOS.</li>
+              <li>Established the core visionOS design system and spatial interaction patterns for the platform.</li>
+              <li>Partnered with the BME Ergonomics Institute to execute academic-grade design research and spatial usability testing.</li>
+            </ul>
+          </div>
+
+          <div class="role">
+            <div class="role-head">
+              <div class="role-title">Product Designer</div>
+              <div class="role-dates">Nov 2019 – Mar 2023</div>
+            </div>
+            <div class="role-company">Frontira (formerly LHBS) · Budapest, Hungary</div>
+            <ul>
+              <li>Delivered end-to-end product design, web/mobile application structures, and design systems for enterprise clients.</li>
+              <li>Led qualitative UX research, usability testing rounds, and service blueprinting to align business strategy with user touchpoints.</li>
+            </ul>
+          </div>
+
+          <div class="role">
+            <div class="role-head">
+              <div class="role-title">UX Designer</div>
+              <div class="role-dates">Feb 2019 – Jan 2021</div>
+            </div>
+            <div class="role-company">Moholy-Nagy University of Art and Design (MOME) · Budapest, Hungary</div>
+            <ul>
+              <li>Designed the physical-human interface (PHID) and digital UI ecosystem for a smart furniture product line.</li>
+              <li>Focused on spatial ergonomics, physical interaction feedback, physical usability testing, and embedded system UX.</li>
+            </ul>
+          </div>
+
+          <div class="role">
+            <div class="role-head">
+              <div class="role-title">UX Designer Intern</div>
+              <div class="role-dates">Jul 2016 – Aug 2016</div>
+            </div>
+            <div class="role-company">Mito · Budapest, Hungary</div>
+            <ul>
+              <li>Worked within Mito's UX/Design department and learned agency workflows.</li>
+              <li>Created user flows, personas, and interactive wireframe prototypes using Axure and Sketch.</li>
+            </ul>
+          </div>
+
+          <h2>Education</h2>
+          <ul>
+            <li>Master of Arts (MA) — Media Design, MOME · 2017 – 2019</li>
+            <li>Erasmus Program — Media Design, Faculdade de Belas-Artes da Universidade de Lisboa · 2018</li>
+            <li>Bachelor of Arts (BA) — Media Design, MOME · 2015 – 2017</li>
+            <li>Audio Engineering Degree · 2014</li>
+          </ul>
+
+          <h2>Sidequests</h2>
+          <ul>
+            <li>Electronic Music Production</li>
+            <li>Visiting Lecturer (BME) — Teaching electronic music production and sound design principles at the Department of Sociology and Communication.</li>
+            <li>Surf</li>
+          </ul>
+        </div>
+        </div>
+        <div class="bottom-blur-veil"><div class="bottom-blur-veil-inner"></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div id="page-texture"></div>
+<div id="cursor-dot"></div>
+<div id="cursor-label">Copy</div>
+
+<script>
+  // Guarantee a proper mobile viewport regardless of whatever the hosting
+  // page put in <head> (belt-and-braces: skip if one is already present).
+  if (!document.querySelector('meta[name="viewport"]')) {
+    var vp = document.createElement('meta');
+    vp.name = 'viewport';
+    vp.content = 'width=device-width, initial-scale=1';
+    document.head.appendChild(vp);
+  }
+
+  function h2(text) { return { t: 'h2', text: text }; }
+  function h3(text) { return { t: 'h3', text: text }; }
+  function p(text) { return { t: 'p', text: text }; }
+  function note(text) { return { t: 'note', text: text }; }
+  function visual(text) { return { t: 'placeholder', label: 'Visual placeholder', text: text }; }
+  function pending(text) { return { t: 'placeholder', label: 'Pending', text: text }; }
+  function stats(items) { return { t: 'stats', items: items }; }
+
+  var PROJECTS = {
+    'nxlog-platform': {
+      title: 'UX Support & Module Design for Enterprise Log Management',
+      tags: ['Log Management', 'Enterprise SaaS'],
+      meta: [
+        { label: 'Duration', value: '2024–2025' },
+        { label: 'Role', value: 'Lead Product Designer' },
+        { label: 'Scope', value: 'Log search & visualization, agent-template assignment system, pipeline visual editor, configuration builder; leading two mid-level designers' }
+      ],
+      lede: `I led product design across four core feature areas of NXLog Platform, an on-premises log management tool for security and IT teams, as an Atlas, Rise! engagement, leading two mid-level designers through architecture revision and redesign work grounded in real, ongoing product requests rather than internal assumptions.`,
+      blocks: [
+        visual(`Hero shot — a composite of one strong screen from each of the four features (the log search table, the template assignment view, the Log Flow Editor canvas, the configuration builder), to establish scope at a glance before the reader starts reading.`),
+        h2('Challenge'),
+        p(`NXLog Platform is an on-premises solution for centralized log management, used by security and IT teams to collect, process, and analyze log data at scale, and by the time I joined several of its core surfaces had grown past what their original design could support: search assumed a schema the underlying data didn't actually have, agent-to-template assignment had outgrown a one-to-one model, pipeline configuration only existed as text, and the configuration builder needed to represent both plan tiers and multi-step SIEM integrations it was never built for. I led the redesign across all four areas, together with two mid-level designers working under me.`),
+        h2('Approach'),
+        p(`NXLog's own product team held the direct relationship with its customers and prospects, and requests were grounded in that real, ongoing contact rather than internal assumptions, their Confluence documentation of customer conversations and requirements was genuinely thorough and made scoping each feature far easier than starting from a blank page. Every proposed direction went through regular design reviews inside the product team's meetings before moving forward, and every screen got checked for feasibility with engineering directly, keeping decisions grounded in what could actually ship rather than isolated design opinion. Early in the engagement I also led a move to a custom Material Design system in Figma, built in agreement with engineering, giving both teams a shared, reusable foundation. Once that was in place, each of the four redesigns below moved noticeably faster than solving a feature's UI from scratch. Only the log search work has confirmed, customer-facing outcome data attached to it below; the other three shipped into the product's ongoing cycle without that same kind of tracking in place.`),
+        visual(`A shot of the Material Design system in Figma, or a before/after of one component moving from the old ad-hoc styling to the new system, to make "shared foundation" concrete.`),
+        h2(`Log search that doesn't assume you know your schema`),
+        p(`As NXLog Platform moved into the broader log management market, its existing search experience assumed a fixed schema the underlying data didn't actually have. Log sources vary wildly in structure, and users often don't know which fields exist before they start looking. Competitors like Splunk, Elastic, and Cribl offered a noticeably more usable search and log-display experience, and closing that gap mattered for being credible in the market at all. What people needed cut across all of that: finding logs by a simple text string or a structured query without knowing the schema upfront, scanning structured data in a table while still seeing complete, unaligned log lines for sources that don't fit one, discovering which fields exist and how their values distribute within the current search, reasoning across time zones without doing the math by hand, and exporting results to people without platform access. The real difficulty wasn't any single screen, it was organizing the field discovery sidebar and the search experience itself so an unpredictable, schemaless dataset didn't turn into a wall of noise, and making sure that structure held up whether someone was typing a quick text lookup or building a precise multi-condition query.`),
+        visual(`The full Log Search screen — search bar, results table, sidebar, timeline together — as the establishing shot for this section.`),
+        h3('Field discovery that adapts to the data'),
+        p(`Instead of asking users to know their schema upfront, I designed the sidebar to surface available fields dynamically based on the current search, with live counts, hover-to-preview, and one-click add or remove as columns, turning schema exploration into part of the search flow itself instead of something users needed to know going in.`),
+        visual(`The field discovery sidebar mid-use, showing live counts and a hovered field preview.`),
+        h3('A search bar that scales from simple to expert'),
+        p(`I laid free-text search and a raw SQL field alongside a visual query builder for constructing grouped AND/OR conditions without writing SQL by hand. Timezone selection lives directly in the search bar, addressing a specific real scenario: an analyst investigating an incident that happened in a different time zone, without doing the time-shift math themselves. Saved searches and one-click link sharing support handoff between analysts and shift changes.`),
+        visual(`The search bar with the visual query builder open, plus the timezone selector, to show the range from simple text search to expert query.`),
+        h3('A results table built for unpredictable data'),
+        p(`Rows load progressively with clear loading states rather than blocking on the full result set. Expanding a row reveals the full event as structured, collapsible JSON, with inline actions, copy JSON, copy link, expand or collapse arrays, that appear on hover rather than cluttering the row by default. Only one row can be expanded at a time, keeping the table scannable during fast-moving investigations.`),
+        visual(`The results table with one row expanded to show the structured JSON view.`),
+        h3('A timeline that doubles as a filter'),
+        p(`I built the timeline as a histogram of log volume over time that sits above or beside the table; dragging across a range zooms the table to that window automatically, with browser back-navigation working to undo the selection. It adapts to side, bottom, or collapsed placement depending on the workflow, and hovering any bar surfaces the exact count and time range.`),
+        visual(`The timeline mid-drag, selecting a range, with the table below already reflecting the zoomed window. A short GIF of the drag-to-zoom interaction would sell this well.`),
+        p(`The redesign was scoped and validated directly against named prospects evaluating NXLog specifically for its log management capability, benchmarked against Cribl, Elastic, and Splunk rather than judged in the abstract, and NXLog's product team flagged it as a factor in at least one enterprise deal that closed during the engagement, the one piece of this work with a confirmed downstream result attached to it.`),
+        h2('Templates that stack, agents that scale'),
+        p(`Agents in NXLog Platform are configured through templates, reusable definitions of what to collect and where to send it, but the original model tied one agent to effectively one configuration at a time, which didn't match reality: a single host often needs several capabilities running at once, Windows event collection and a relay function and internal diagnostics, for instance, and a single template needs to roll out across large, overlapping groups of agents rather than one at a time. Internally this was flagged as the most complex screen in the product, a genuine many-to-many relationship at a scale of thousands of agents and dozens of templates, where getting the interaction model wrong would make bulk operations error-prone in a security-critical tool. People needed to stack several templates on one agent, see from the agent list how many templates were assigned and expand to see exactly which, work from either direction, which hosts need this capability, or what does this host need, know if a new template conflicted with what was already there, push a change to every assigned agent or a specific subset, and manage control planes, the mechanism agents connect through, as their own entity.`),
+        visual(`The agent list with the templates-assigned column expanded to show which templates are on a given agent.`),
+        h3('Two entry points into the same relationship'),
+        p(`Because users think about assignment from both directions, I designed two parallel flows: agents to templates, starting from the agent list, selecting agents, then choosing which templates to assign, and templates to agents, starting from a template and selecting which agents should receive it. Both converge on the same underlying assignment logic, so the system stays consistent regardless of which direction a user starts from, and whichever screen the flow is entered from pre-populates that side of the selection automatically.`),
+        visual(`Both entry flows side by side, or a short GIF of one flow, agent list → select agents → assign templates.`),
+        h3('Designing for partial, not just all-or-nothing, state'),
+        p(`At scale, a batch of selected agents is rarely uniform, some already carry a given template, some don't. Rather than forcing a binary toggle, I designed the assignment UI to distinguish assign to all, clear from all, and leave as-is, and to visually differentiate a template that's on every selected agent from one that's on only some of them. This was one of the harder interaction problems in the whole feature, since getting it wrong risks silently changing configuration on agents the user didn't intend to touch.`),
+        visual(`The assignment UI showing the three-state distinction on a mixed batch of agents — this is the clearest single shot of the hardest interaction problem in the feature.`),
+        h3('Separating authoring from deployment'),
+        p(`Editing a template supports Save, Save As, branching a variant instead of overwriting the original, and Save as Draft for a route that isn't complete yet, distinct from the separate action of actually assigning or pushing the change to agents. This gives users room to iterate on a definition without every keystroke being live on production agents.`),
+        h3('Control planes as a first-class, separate concern'),
+        p(`Rather than folding control-plane management into the general config flow, it got its own space: a list of control planes with one protected default, and an explicit assignment step for putting agents on a non-default control plane. The agent list surfaces which control plane an agent belongs to as its own column, so that context isn't hidden behind a click.`),
+        visual(`The control planes list with the protected default marked, plus the agent list showing the control-plane column.`),
+        h2('Making the pipeline visible'),
+        p(`An agent's log pipeline, collectors feeding relays feeding destinations, previously only existed as text configuration. There was no way to see the shape of that pipeline at a glance, which made it hard to reason about the overall architecture, spot where a bottleneck or failure was happening, or onboard someone unfamiliar with a given environment's topology. People needed to see the full pipeline as a visual architecture instead of inferring it from config text, build and rearrange it by dragging and connecting pieces rather than hand-editing routing definitions, monitor live throughput per node to catch bottlenecks before they became incidents, see health at a glance across the whole environment, handle nodes that fan out to multiple protocols without the diagram turning to clutter, and get started without a blank-canvas problem. Here too, the real challenge sat underneath any single interaction: organizing how the different node and connection types were represented, and keeping the canvas legible once a real pipeline had more than a handful of nodes on it.`),
+        visual(`The full Log Flow Editor canvas with several connected nodes, as the establishing shot.`),
+        h3('Auto-synced cards, not manual re-entry'),
+        p(`I turned existing configurations automatically into draggable cards showing their live agent and connection counts, so users place and wire together configs that already exist in the system rather than redefining them on the canvas, which keeps the diagram truthful to what's actually running.`),
+        h3('Cable-based connections that mirror a network diagram'),
+        p(`I connected nodes by dragging a cable from one connection point to another, with a delete action surfacing on hover. The intent was to echo how security and network engineers already think about topology, wiring boxes together, rather than introducing a novel interaction model for the same idea.`),
+        visual(`Two nodes mid-connection, cable being dragged between them.`),
+        h3('Two modes: designing vs. watching'),
+        p(`The canvas has an Architecture view for building and rearranging the pipeline, and a separate EPS, events-per-second, view for live monitoring, each node shows input and output throughput over time in that mode. Keeping these separate meant the editing experience didn't get cluttered with live data, and the monitoring view didn't get weighed down with edit controls.`),
+        visual(`The same pipeline shown in both Architecture and EPS mode, side by side, to make the split concrete.`),
+        h3('Multi-protocol nodes stay legible'),
+        p(`A node that fans out across several protocols or destinations, TCP, HTTP, HTTP/3, UDP, shows each as its own labeled connection point instead of collapsing them into one ambiguous link, important in a tool where getting the wrong protocol on the wrong route has real operational consequences.`),
+        h3('A guided path out of the blank canvas'),
+        p(`First-time use starts from an explicit empty state, "You don't have any flows yet," rather than a bare grid, leading into a short three-step walkthrough, arrange configs, connect configs, check the flow, with an explicit reassurance that changes in the flow view don't alter the underlying configurations. That reassurance mattered: without it, users hesitate to experiment on something that looks like it controls live infrastructure.`),
+        visual(`The empty state and the three-step walkthrough, to show the onboarding sequence.`),
+        h2('Configuration without the syntax barrier'),
+        p(`NXLog Agent configurations are written in an Apache-style syntax of nested blocks and directives, powerful, but a real barrier for anyone who isn't already fluent in it. Plan tiering, Free, Basic, Premium, meant certain modules and templates weren't available to every user, and integrating with a third-party SIEM like Google Chronicle or QRadar was never just "add a template," it also meant setting things up on the SIEM side, which the product hadn't previously represented as its own step. People needed to build a working configuration without hand-writing the syntax while still being able to see and edit it as text for full control, start from ready-made templates instead of assembling everything from primitive modules every time, know upfront which templates their plan actually included rather than hitting a paywall mid-build, get real help completing integrations that needed more than an agent-side change, and leave a configuration unfinished without losing work. The real challenge was organizing the underlying type system, matching what the builder let people configure to how NXLog Agent actually models a route, and keeping the visualization clean once modules and options started stacking up, more than any single interaction on its own.`),
+        visual(`The configuration builder's Collect / Actions / Send to columns, populated with a real route, as the establishing shot.`),
+        h3('A visual structure that mirrors the real configuration model'),
+        p(`I organized the builder into Collect, Actions, and Send to columns that map directly to how NXLog Agent actually processes data, input, processing, output, within routes, so what users drag and drop corresponds one-to-one with real configuration blocks rather than an abstraction layered on top that could drift from what's actually deployed. A "view as configuration text" toggle sits next to the builder at all times, so the visual and text representations are always the same document, not two different sources of truth.`),
+        visual(`The builder with the text-view toggle active, showing the same route as both diagram and raw config side by side.`),
+        h3('Plan tier shown at the point of choice'),
+        p(`Every template and module in the picker carries an inline Basic or Premium badge, and a "show only free" filter lets trial or free-plan users scope the picker to what they can actually use. This moved plan awareness from a wall people hit after building something to information available while they're choosing.`),
+        visual(`The module picker with the Basic/Premium badges visible and the "show only free" filter toggled.`),
+        h3('Multi-step setup for integrations that are more than a config'),
+        p(`For destinations like Google Chronicle, the flow doesn't pretend a template alone finishes the job, it walks through configuring the agent side, connecting to the SIEM, API keys, region, customer ID, credentials file, downloading and installing SIEM-side components, and importing detection rules where relevant. Representing this as a short guided sequence, rather than one form, matches the real shape of the work instead of hiding it.`),
+        visual(`One or two steps of the Google Chronicle multi-step setup flow.`),
+        h3('Consistent save states across the builder'),
+        p(`In line with the same principle from the templates work, Save, Save Draft for an incomplete route, and Save Configuration are distinct actions, so a user can safely leave a configuration mid-way without either losing it or accidentally deploying an incomplete route.`),
+        h2('Lessons'),
+        p(`Getting this deep into a single company's domain was one of the more valuable parts of the engagement. Log management wasn't something I knew going in, and building that domain knowledge properly, not just enough to ship a screen, shaped every one of these four redesigns. What stood out most was how continuous the engineering involvement stayed throughout, checked on every direction rather than at a few fixed points, and NXLog's own product team having already gathered real customer documentation meant each feature could start from that material instead of from nothing.`)
+      ]
+    },
+    'enlight': {
+      title: 'FinTech Engagement Platform Concept & AI Prototyping',
+      tags: ['Fintech', 'Gamification'],
+      meta: [
+        { label: 'Duration', value: '2025–ongoing' },
+        { label: 'Role', value: 'Lead Product Designer' },
+        { label: 'Scope', value: 'Strategy canvas workshop facilitation, product definition, UX/UI design, design system adaptation, point and rewards system design' }
+      ],
+      lede: `I've been leading the design of a gamification and financial-education module that banks embed into their own apps, from the strategy canvas workshop that shaped what the product actually is through to an experience that's still evolving as the client pitches it to new stakeholders.`,
+      blocks: [
+        note(`NDA project. The product name and specific partner or client identities are generalized or omitted.`),
+        visual(`Hero shot here — the Level/points overview screen (Level, points-to-level-up bar, streak) is the most recognizable single screen to lead with.`),
+        h2('Challenge'),
+        p(`Financial education inside a banking app usually fails for one of two reasons: it's generic and disconnected from anything the user is actually doing, or it's positioned as a chore with no real payoff. The client brought Atlas, Rise! an idea for something different, a module banks could embed in their own apps that made financial engagement feel less like an obligation and more like something people would return to, but the idea itself wasn't yet a product. Working alongside a mid-level designer, I led a strategy canvas workshop to pull an actual product out of that idea: what it would do, what it would look like, and what value propositions it would need for the specific stakeholders the client wanted to pitch it to.`),
+        visual(`The strategy canvas board or an early flow sketch from that first stage, to show where the design actually started.`),
+        h2('Approach'),
+        p(`From the workshop I built out the flow and the design system on shadcn, customized for the module's own components, and designed the resulting experience, the learning flow, the two activity formats, the point and leveling system, and how personalized offers surface within it, with a mid-level designer supporting specific pieces of that build. The project has stayed active since 2025 as the client continues pitching it to new stakeholders. It's still at pitch stage, no bank has launched it to real users yet, and a CMS to manage the content and the partner-benefit weighting is planned as part of the same effort but hasn't been scoped.`),
+        h2('Rebuilding the flow between pitches'),
+        p(`Every time the client pitched the module to a new stakeholder, new requirements and new perspectives came back with it, and flows that had felt settled needed rebuilding again. Reworking a fully designed flow by hand each time that happened got heavy, so partway through I moved prototyping onto AI tools, starting with Figma Make, mainly to keep pace with how often things were changing. It also turned into a useful, if accidental, test of how dependent a process like this can become on tools like that: how much time an iterative project like this actually eats, and what that ends up costing. Iteration did get faster, but the speed created its own problem. Once anything can be requested and built quickly, the client starts expecting everything to work that way, and in practice that usually ends up costing more than scoping and designing it properly the first time would have. Useful to have learned that firsthand, but not a tradeoff I'd let happen by default again without putting it on the table with the client up front.`),
+        visual(`A couple of the AI-prototyped (Figma Make) screens, or a before/after of one flow that got rebuilt after a pitch, if you kept either — this is the strongest "real obstacle" visual in the case study.`),
+        h2(`From a bank's goal to a single quiz`),
+        p(`None of this exists as gamification for its own sake, every piece traces back to what the bank actually wants to achieve. A bank's marketing strategy sets the priorities for a given period, building security awareness, encouraging saving behavior, cross-promoting a partner offer, and that choice cascades all the way down: it decides which topics the quizzes explain and which real-world tasks the missions ask for, both of which award points once completed. What a bank does with those points afterward is its own decision too. It can close the loop, a savings quest unlocking a savings-related benefit and reinforcing the exact behavior it just rewarded, or open it up and use points earned on one topic to promote something else entirely, a partner benefit that has nothing to do with what the user just learned. I designed the system to support both, since which one made sense depended on what a given bank was actually trying to do, not on a fixed idea of how gamification should work.`),
+        visual(`A simple diagram of this chain, marketing goal → topic → quiz/mission → points → benefit, would do more here than any single screenshot; a Rewards or Special-offers screen showing an earned benefit works as a substitute if a diagram isn't available.`),
+        h2('Two ways to engage'),
+        p(`Two activity types carry the actual content. Quizzes are short, multiple-choice prompts, spotting a phishing attempt, an everyday budgeting habit, that award a handful of points. Missions are longer, time-boxed real-world tasks, setting aside a set amount in savings, that award more points, and some also unlock partner benefits directly. Both sit on the same shallow, linear path, a single entry point into a Learning hub, then a course, a module, and a short quiz on its content, ending in feedback and a claimable reward, since financial content already carries enough friction on its own without an unfamiliar interaction model piled on top.`),
+        visual(`The Activities screen with the All / Security / Banking / Survey / Done filter chips and a mixed list of quizzes and missions, to show both formats living side by side.`),
+        h3('Choosing how fast to chase the bonus'),
+        p(`Accepting a mission means choosing a pace first: Sprint (24 hours, +50% bonus), Jog (3 days, standard), or Walk (1 week, –20%). That turns acceptance from a single binary tap into a small commitment decision, so someone can chase the bonus if their schedule allows it instead of everyone being pushed onto the same fixed deadline.`),
+        visual(`The "Accept Mission" screen with the Sprint / Jog / Walk options — a clean, self-explanatory visual, use as-is.`),
+        h2('Progress that means something day to day'),
+        p(`A single, persistent point balance sits at the top, next to the user's level and streak, but two separate progress mechanics sit underneath it: points to level up (e.g. 1,495 of 1,500), giving a concrete sense of proximity rather than just a running total, and a shorter activity-completion tracker (e.g. 3 of 4) for time-bound sets, kept distinct from the level bar so day-to-day or campaign engagement stays legible on its own. Keeping early levels rewarding without the numbers flattening out later is something I've had to reason through without live usage data to check it against, since the product hasn't launched to real users yet, so it's a balance I expect to keep revisiting once it does.`),
+        visual(`The Level overview screen — Level, points-to-level-up progress bar, streak, and the Activities tracker together — the clearest single shot of the whole system.`),
+        h2('Making the small stuff legible'),
+        h3('Telling users why an offer showed up'),
+        p(`Special offers split into "Just for you" (personalized) and "Based on your activity" (behavior-triggered), so promotional content in a financial product doesn't read as one undifferentiated feed, users can tell why something is showing up, which matters more for trust here than in most apps. One concept explored for this section, shown in an early pitch deck, is an AI assistant built on the card network's own AI tools, surfacing prompts like "treat yourself" based on activity; that's stayed a pitch-stage concept rather than something built out.`),
+        h3('One filter system for two content types'),
+        p(`Quizzes and missions share the same category chips, All, Security, Banking, General, Survey, Done, so a themed campaign, a security push, for example, can surface consistent content across both formats without needing two separate navigation models to maintain.`),
+        h3(`Showing what's still out of reach`),
+        p(`Higher-tier benefits appear locked, with their level requirement visible, rather than hidden entirely, so the leveling system reads as a path forward instead of a black box, and there's a concrete reason to keep engaging.`),
+        visual(`The "Your benefits" row — active tiers next to a locked one with its level requirement shown — and the Special offers section with both "Just for you" and "Based on your activity" visible.`),
+        h2('Lessons'),
+        p(`The benefit-weighting work turned into its own discipline. The module sits on top of a card network's existing loyalty program, and deciding which of those benefits to surface, how to weight them against each other, and which quests should promote which benefit meant reasoning about the partner's incentives as much as the user's. That's still evolving as more of the catalog gets mapped in.`),
+        p(`Running the strategy canvas workshop myself, before any interface work started, changed how I think about scoping a product that doesn't exist yet. It's a different skill from refining an existing flow, and it's made me more comfortable stepping into that earlier, messier stage of a project instead of waiting for someone else to hand me a settled brief.`),
+        p(`Leaning on AI tools out of necessity left me with a clearer read on where that tradeoff actually sits: fast iteration is genuinely useful once a client's requirements are still moving, but it isn't free, and I'd rather put that cost on the table explicitly next time than let speed quietly become the client's new baseline expectation.`),
+        p(`This one's still at pitch stage, not shipped to real users, and that's part of what makes it a different kind of case study for me: most of what's here is design reasoning under an unusually moving target, rather than something I can point to finished numbers for.`)
+      ]
+    },
+    'bkk-payandgo': {
+      title: 'Public Transport Ticketing Evaluation & Redesign',
+      tags: ['Public Transport', 'Service Design'],
+      meta: [
+        { label: 'Duration', value: '2024' },
+        { label: 'Role', value: 'Lead UX Researcher & Product Designer' },
+        { label: 'Scope', value: 'Heuristic analysis, analytics review, field research, usability testing, terminal and portal redesign, positioning strategy' }
+      ],
+      lede: `I led the UX research and redesign strategy for BKK's contactless ticketing system, Pay&GO, spanning the physical terminal, the informational subpage on bkk.hu, and the customer portal, running a heuristic audit with two mid-level designers, five days of field research on Budapest's M1 line, and sixteen usability tests before designing the recommendations that came out of it.`,
+      blocks: [
+        visual(`Hero shot here — the physical terminal in situ at a metro stop is the strongest option, since it's the most tangible, recognizable part of the project at a glance.`),
+        h2('Challenge'),
+        p(`BKK, Budapest's public transport authority, needed to know how riders actually understood, trusted, and used Pay&GO, its contactless tap-to-pay ticketing system, across every touchpoint riders actually went through: the physical terminal, the informational subpage, and the customer portal for managing purchases and complaints. I led this research and the resulting design work for Atlas, Rise!, BKK's design partner on the project, together with two mid-level designers who ran the heuristic analysis under my review and a lead strategist who worked alongside me on the project. The most consequential recommendation to come out of it wasn't a single screen, it was how BKK should talk about the product in the first place.`),
+        h2('Approach'),
+        p(`The project moved through five stages. For the heuristic analysis, the two designers I worked with each independently evaluated the bkk.hu Pay&GO subpage and the customer portal against a checklist of 296 items across 13 categories, based on Nielsen's heuristics; I reviewed and validated their findings with them. A Google Analytics review of both language versions of the subpage added real traffic context (see the numbers under the website and portal below). For field research, the team spent five observation days at stops on the M1 metro line and the +100E route, watching riders actually use the physical terminal and stopping them for short interviews in the moment rather than relying on lab conditions or recall after the fact. From there I ran sixteen usability tests against the redesigned flow and the built prototypes, covering the communication materials, the purchase and inspection process, the subpage, and the portal, iterating the designs as each round of testing surfaced new friction.`),
+        visual(`The heuristic analysis radar chart from the research report — it's already a clean, presentable diagnostic visual, no rebuilding needed. A photo from the field research days works well here too, coordinators or riders at the terminal in situ.`),
+        h2('The terminal'),
+        h3('What the research found'),
+        p(`More taps than intended. The terminal screen stays on and inviting at all times, unlike a vending machine's deliberate "touch to start," so riders often triggered a purchase without meaning to. Unresponsive touchscreens and mismatched timeout durations made this worse, a hardware and firmware problem sitting underneath the interface one: a stray tap that should have done nothing sometimes became a purchase riders didn't notice until they checked their bank statement.`),
+        p(`Help that shouldn't be necessary. Most riders couldn't buy or validate a ticket unaided. In practice, a passenger coordinator ended up doing double duty as purchase confirmation and general education for the service, and wherever no coordinator was present, fewer riders managed to buy or validate on their own, a sign the interface itself needed to carry more of that education.`),
+        p(`A tap that doesn't feel like a tap. Riders rubbed their card against the contactless reader instead of tapping it, mistook the validator for a barcode or QR scanner, and sometimes looked for a BudapestGO app code on the device instead, none of which the existing interface ever corrected.`),
+        p(`Confirmation that never quite arrives. Riders expected some confirmation after paying, an on-terminal message, a bank notification, a transaction history entry, a paper receipt, or confirmation inside the BudapestGO app, but the terminal's own audio and visual feedback was inconsistent (the audio cue, for instance, only fired for purchases of one or two tickets). Several riders also assumed Pay&GO was directly tied to the separate BudapestGO app and looked for their ticket there instead of on the physical device.`),
+        p(`Distrust at inspection. Riders didn't understand how their ticket would actually be checked, and were uneasy about a bank card serving as their proof of travel, a discomfort made worse by inspections themselves sometimes failing when an inspector couldn't get a rider's card or phone to activate.`),
+        p(`A ticket that starts before you think it does. The most structural finding: riders don't realize a Pay&GO ticket is valid immediately and tied to a specific direction of travel, so some deliberately over-purchase, assuming they can use extra taps later. Several coordinators also pointed out that the name "Pay&GO" itself doesn't clearly separate this ticket type from a standard paper single ticket in riders' minds.`),
+        visual(`A photo or screen capture of one of the actual observed behaviors — riders rubbing a card against the reader, or a terminal with a stray notification/purchase mid-screen — makes these findings concrete rather than abstract.`),
+        h3('Redesigning the terminal flow'),
+        p(`I designed the redesigned flow directly from these findings, closing the gaps the research surfaced screen by screen.`),
+        visual(`This is the strongest GIF opportunity in the whole case study — an animated walkthrough of the five screens below in sequence, check tickets → quantity → tap → loading → success, shows the actual flow far better than five static screenshots.`),
+        p(`Checking before buying. I opened the flow on "Van érvényes jegyem? / Check my tickets," addressing the accidental-purchase problem directly: riders can confirm what they already hold before the terminal lets them buy anything new.`),
+        p(`A price you see before you commit. Quantity selection shows a large, unambiguous total price, so the transaction is legible before payment is confirmed, not after.`),
+        p(`Tap, not rub. A single instruction, "Touch card to purchase a Digital Single Ticket," pairs with a clear contactless icon, targeting the observed pattern of riders rubbing their card against the reader instead of tapping it.`),
+        p(`Feedback at every stage. I added an explicit loading state while payment is in progress, since riders expect feedback at every stage, not just at the end.`),
+        p(`What to show at inspection. The success screen I designed tells riders what to do next: present the same bank card on inspection. I built it specifically to close the trust gap the research uncovered, riders who don't understand why their bank card is their proof of travel, and who feel uneasy about that at the point of inspection.`),
+        p(`Bilingual Hungarian and English copy runs throughout the flow, matching BKK's real rider base in a city with heavy tourist and international traffic, and directly answering the finding that riders rarely switch the terminal's language themselves.`),
+        h3('Naming the ticket, or dropping the idea of a ticket'),
+        p(`The redesigned screens above close the moment-to-moment gaps in the flow, but they don't touch the finding underneath the most structural one: that riders don't realize a ticket is valid immediately. That's a naming problem before it's a screen problem. Riders consistently described what they'd bought in different ways, a digital ticket, a virtual ticket, a card-based ticket, each implying a slightly different idea of what Pay&GO actually is. I weighed two directions against a need-to-have/nice-to-have and effort matrix: keep the "digital ticket" framing and clean up the language around it, low effort, but only a nice-to-have improvement over what riders already partially understood, or drop the ticket concept entirely and reposition Pay&GO as a pay-as-you-go travel fare, communicating it as paying for the ride itself rather than buying a ticket for it. The second direction meant touching more communication materials and rethinking messaging across every touchpoint, but it addressed the actual misunderstanding at its root instead of polishing language around a concept riders were already misreading, so that's what I recommended.`),
+        visual(`The need-to-have/nice-to-have × effort matrix from the research deck, showing both options plotted against each other — this is a genuinely strong, self-explanatory visual for exactly this kind of reasoning, use it directly.`),
+        h2('The website and portal'),
+        h3('What the research found'),
+        p(`A menu that reads like a table of contents. On the informational subpage, the heuristic analysis and the traffic data pointed at the same problem from two directions: menu items and page titles used visually similar styling, so nothing signaled hierarchy, and submenu listings read as a table of contents rather than a path to click through. Riders looking for one specific answer bounced between the homepage, the subpage, and the ticket vending machine's own info screen before finding it, and the page's hero banner, prominent and well-placed, functioned as decoration instead of doing any of that navigational work.`),
+        p(`Trust, not usability, on the customer portal. The portal scored well on the heuristic checklist, but the usability tests surfaced trust problems the checklist couldn't catch. Riders hesitated to log in at all, and only proceeded once they understood the portal doesn't ask for a CVC code, that hesitation traces directly to how closely the login screen resembles a payment form. Once inside, the masked card number shown for identifying a payment method reads as the rider's actual card number, when it's actually a token, and riders had no way to know that from the interface. Menu naming added to the confusion: the same reporting function was called "Visszajelzés" in the navigation, "bejelentés" in the FAQ, and something else again in a hidden sub-menu, so several riders who did find the report form defaulted to emailing a screenshot to BKK's general inbox instead, the workaround they already trusted.`),
+        visual(`The original subpage's flat menu list next to the portal's login/CVC screen — pairing the two findings in one shot sets up the "before" for the fixes that follow.`),
+        h3('Fixing the subpage and portal'),
+        p(`The subpage and portal already had working content and account structures underneath them, so these fixes are targeted: I went after the specific points where usability testing showed riders getting stuck or hesitant, rather than rebuilding either surface screen by screen.`),
+        p(`A homepage that actually navigates. I restructured the subpage around the actual steps of using Pay&GO, choosing a quantity, tapping to pay, what a successful purchase looks like, what an unsuccessful one looks like, checking a ticket at inspection, instead of a static hero sitting above a flat page list, and gave the hero itself a job: showing those real steps instead of functioning as decoration.`),
+        p(`Removing a security prompt that was never needed. I dropped the CVC field from the portal's card-lookup screen entirely, since Pay&GO never needed it in the first place, and added an inline note explaining why, directly answering the login hesitation the usability tests surfaced.`),
+        p(`A token that doesn't look like your card number. I relabeled the masked card number shown in the portal to make clear it identifies a saved payment method, not the rider's actual card number, closing a piece of confusion the interface had been creating on its own.`),
+        p(`One name for one function. I gave the reporting and feedback function a single consistent name across the navigation, the FAQ, and every sub-menu that referenced it, so riders stop defaulting to emailing a screenshot because they can't find or trust the form built for exactly that.`),
+        visual(`The restructured subpage, before/after against the flat page list from the finding above, is the highest-value visual in this section — a direct side-by-side makes the navigation fix obvious without reading a word.`),
+        h2('Where this stands'),
+        p(`The heuristic analysis and usability testing gave a solid diagnostic baseline rather than proof of impact:`),
+        stats([
+          { value: '70%', label: 'bkk.hu Pay&GO subpage, heuristic usability score' },
+          { value: '85%', label: 'Customer portal, heuristic usability score' },
+          { value: '16', label: 'usability tests run across the terminal, subpage, and portal' },
+          { value: '3,200+', label: 'monthly subpage visits per language (Google Analytics)' }
+        ]),
+        p(`Both interfaces scored above average, and the usability tests came back with clearly positive feedback on the core Pay&GO concept itself. What that told us is that the problems riders ran into were specific and fixable, not concept-level, which is what the work above addresses across all three touchpoints.`),
+        p(`Three findings sit outside any single screen's UI: the terminal's touchscreen responsiveness and timeout tuning, which needed a hardware and firmware fix rather than an interface one; the naming and positioning work above; and clarifying, likely through in-terminal messaging and coordinator scripts, that a ticket is valid immediately and tied to direction of travel. No amount of interface polish alone resolves a rider's mental model of when a ticket actually starts.`),
+        pending(`Post-launch numbers, once available: adoption of the redesigned flow, or updated usability results after the recommendations ship.`)
+      ]
+    },
+    'skytree': {
+      title: 'Multirole CO2 capture monitoring system design',
+      tags: ['Hardware', 'Data Visualization'],
+      meta: [
+        { label: 'Duration', value: '~3 months' },
+        { label: 'Role', value: 'Senior Product Designer' },
+        { label: 'Scope', value: 'Design system, UI/UX, dashboard design across 3 user roles' }
+      ],
+      lede: `I designed the core system and three role-based dashboards for a CO2 capture monitoring platform, working from early-stage product discovery to handoff-ready designs in three months.`,
+      blocks: [
+        note(`NDA project. Client and customer details are generalized or based on placeholder data from the working files.`),
+        visual(`Hero shot here — one strong dashboard screen, or a composite of the three roles' overview screens side by side, to establish scope at a glance before the reader starts reading.`),
+        h2('Challenge'),
+        p(`The client, a startup, was building a monitoring platform for CO2 capture units, and three very different people needed to trust the same system: a device owner checking on their unit, a technician responsible for a whole fleet of them, and an admin managing who gets access to what. The dev team had run discovery workshops to get the client's goals and flows onto paper, but the paper only went so far. I joined to turn that raw output into designs the client could actually react to, fast enough that engineering could commit its time to what was proven to work instead of what sounded right in a workshop.`),
+        h2('Approach'),
+        p(`I wireframed straight from the validated workshop output and built the design system on shadcn, customizing and extending it to cover what the platform actually needed. The client's product team, who were in direct contact with owners, technicians, and admins, was the main channel for user needs, since the timeline didn't leave room for formal usability testing. Every wireframe went back to them and the dev team for a feasibility check before it moved forward, over roughly three months from first sketches to handoff-ready designs.`),
+        visual(`The workshop board or an early wireframe, to show the raw starting point before it became a screen.`),
+        h2('Design that decides'),
+        p(`The client hadn't fully settled what each role needed, and workshops alone couldn't finish that conversation. Often the only way the team could tell whether a scope was right was to see it laid out on a screen. So a fair amount of the "discovery" happened through iteration rather than before it, which meant designs sometimes got rebuilt once the client saw them and realized they'd asked for the wrong thing. Having the design system already in place is what made that workable: a rejected direction cost a few days, not weeks, so the ambiguity never stalled the project. Looking back, I'd push for more structured facilitation of that discovery up front, before the first wireframe, but the setup itself, iterate fast and let the screens do some of the deciding, wasn't a bad way to handle a client who was still figuring out its own product.`),
+        visual(`If you kept a before/after of one screen that got rebuilt after the client saw it, this is the place — a concrete example would land this section harder than the text alone.`),
+        h2('One design system, three dashboards'),
+        p(`I built the system once, on shadcn, extended with custom components for data tables, status indicators, multi-step forms, and monitoring widgets, and then scoped three separate dashboards out of it: one per role, each cut down to what that role actually needed to act, not everything it could theoretically see. That discipline, cutting features per role instead of showing them "just in case", is what kept a three-role MVP from turning into three bloated ones.`),
+        visual(`A small component-library sheet or a few of the custom shadcn extensions — data table, status indicator, multi-step form — shown as a set, to back up "built the system once."`),
+        h3('A hierarchy admins could actually see'),
+        p(`Admin's real complexity was the hierarchy underneath it: one customer can have several devices and users, each device can carry an assigned technician, and each user's role, client, admin, or support, decides what they're allowed to touch. Instead of sending admins to a separate page for every one of those relationships, I let the customer list expand inline to show its devices and users directly, and gave invite, edit, block, and delete a single shared modal instead of four flows to learn separately.`),
+        visual(`The Company Overview screen with a customer row expanded inline, plus the shared Invite User modal. A short GIF of the row expanding would show the inline-vs-separate-page decision better than a static shot.`),
+        h3('Location first, then the unit'),
+        p(`Technicians work across sites and countries, not one device, so I made navigation location-first: region, then site, then individual unit. Inside a unit, the view is three tiers deep, headline metrics first (CO2 produced, productivity, purity, energy consumption), then live status (tank level, operating state), then the time-series charts underneath, so the most urgent read is always the first thing on screen.`),
+        visual(`The System Overview map, then one unit's detail view showing the three tiers stacked — metrics, status, charts.`),
+        h3('Letting technicians ask their own questions'),
+        p(`Technicians needed to ask their own questions of the data, not just read a fixed set of charts, so I built a tool that lets them choose a sensor, the statistic to plot, minimum, maximum, average, or median, and a color. Raw unit logs sit directly in the interface too, not behind an export, so technicians can troubleshoot without waiting on a download.`),
+        visual(`The custom chart tool mid-use — sensor and statistic pickers open — plus the raw log view. A GIF of picking a sensor and watching the chart update would sell "ask their own questions" well.`),
+        h3('Only what a single device owner needs'),
+        p(`The User dashboard runs on the same data as the other two, cut down to what someone actually checks about their own device day to day: today's overview, current status, and the production chart, with no multi-site navigation or admin controls anywhere in reach. For that production chart, I tried a continuous line laid over multiple metrics before settling on individual cycles shown as bars: the unit doesn't produce CO2 continuously, it works in absorption, desorption, and release cycles, and a smooth line blurred exactly the structure an owner needs to read at a glance. Bars keep every cycle legible on its own. Anyone with just one device skips device selection entirely and lands straight on its overview, and the layout holds up across desktop, tablet, and mobile.`),
+        visual(`The User overview screen with the per-cycle bar chart. If you still have the rejected line/overlay version, showing both side by side is the single best visual in this case study — it makes the tradeoff argument for you.`),
+        h2('Access and onboarding'),
+        p(`Access is invite-only. A new user gets an email invitation, sets a password, and lands directly on their dashboard, and password reset follows the same shape, an emailed link into a dedicated reset screen.`),
+        visual(`The invite email and the password-set screen, or skip this one if space is tight — it's the lowest-priority visual in the piece.`),
+        h2('Lessons'),
+        p(`The shadcn base I built on was the free tier, which was the right call for the timeline at the time. More capable component libraries exist now, better value for the same kind of build, and that's what I'd reach for today.`),
+        p(`The bigger value of this project was everything around the screens. I got a real look into how a hardware product actually works, which I hadn't designed for before, and I liked working inside a team that treated MVP scoping as an actual discipline rather than a checkbox. One conversation with a hardware engineer, walking through how the unit actually produces and measures CO2, is what let me structure the cycle timeline and the metrics around it accurately instead of guessing at the shape of the data. Working closely with the dev team more broadly taught me a lot about structuring and communicating data efficiently, plus a better sense of what they actually need from a handoff to keep moving. One of the more useful projects I've done for my own growth as a designer, and a genuinely good experience overall.`)
+      ]
+    }
+  };
+
+  var sections = {
+    work: document.getElementById('view-work'),
+    project: document.getElementById('view-project'),
+    about: document.getElementById('view-about')
+  };
+  var navLinks = document.querySelectorAll('.nav-link');
+  var filmstrip = document.querySelector('.filmstrip');
+  var viewProjectEl = document.getElementById('view-project');
+  var toc = { items: [], sections: [], activeIndex: -1 };
+  var allowInternalCopy = false;
+
+  document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  document.addEventListener('copy', function (e) {
+    if (!allowInternalCopy) e.preventDefault();
+  });
+  document.addEventListener('dragstart', function (e) {
+    if (e.target && e.target.tagName === 'IMG') e.preventDefault();
+  });
+
+  function renderBlocks(container, blocks) {
+    container.innerHTML = '';
+    blocks.forEach(function (b) {
+      if (b.t === 'h2') {
+        var h = document.createElement('h2');
+        h.className = 'cs-h2';
+        h.textContent = b.text;
+        container.appendChild(h);
+      } else if (b.t === 'h3') {
+        var h3el = document.createElement('h3');
+        h3el.className = 'cs-h3';
+        h3el.textContent = b.text;
+        container.appendChild(h3el);
+      } else if (b.t === 'p') {
+        var pEl = document.createElement('p');
+        pEl.className = 'cs-p';
+        pEl.textContent = b.text;
+        container.appendChild(pEl);
+      } else if (b.t === 'note') {
+        var nEl = document.createElement('p');
+        nEl.className = 'cs-note';
+        nEl.textContent = b.text;
+        container.appendChild(nEl);
+      } else if (b.t === 'placeholder') {
+        var v = document.createElement('div');
+        v.className = 'cs-placeholder';
+        var label = document.createElement('div');
+        label.className = 'cs-placeholder-label';
+        label.textContent = b.label;
+        var desc = document.createElement('div');
+        desc.className = 'cs-placeholder-desc';
+        desc.textContent = b.text;
+        v.appendChild(label);
+        v.appendChild(desc);
+        container.appendChild(v);
+      } else if (b.t === 'stats') {
+        var grid = document.createElement('div');
+        grid.className = 'cs-stats';
+        b.items.forEach(function (it) {
+          var stat = document.createElement('div');
+          stat.className = 'cs-stat';
+          var val = document.createElement('div');
+          val.className = 'cs-stat-value';
+          val.textContent = it.value;
+          var lab = document.createElement('div');
+          lab.className = 'cs-stat-label';
+          lab.textContent = it.label;
+          stat.appendChild(val);
+          stat.appendChild(lab);
+          grid.appendChild(stat);
+        });
+        container.appendChild(grid);
+      }
+    });
+  }
+
+  function clearToc() {
+    document.getElementById('project-toc').innerHTML = '';
+    toc.items = [];
+    toc.sections = [];
+    toc.activeIndex = -1;
+  }
+
+  function updateTocHighlight() {
+    if (!toc.sections.length) return;
+    var containerTop = viewProjectEl.getBoundingClientRect().top;
+    var activeIndex = 0;
+    toc.sections.forEach(function (h, i) {
+      var rect = h.getBoundingClientRect();
+      if (rect.top - containerTop <= 120) activeIndex = i;
+    });
+    var atBottom = viewProjectEl.scrollTop + viewProjectEl.clientHeight >= viewProjectEl.scrollHeight - 2;
+    if (atBottom) activeIndex = toc.sections.length - 1;
+    toc.items.forEach(function (el, i) {
+      el.classList.toggle('current', i === activeIndex);
+    });
+
+    // On the mobile horizontal TOC strip, snap the active item fully to
+    // the left edge as the page scrolls, so its full label is always
+    // readable rather than clipped at the strip's right edge.
+    if (activeIndex !== toc.activeIndex) {
+      toc.activeIndex = activeIndex;
+      if (window.innerWidth <= 700 && toc.items[activeIndex]) {
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        toc.items[activeIndex].scrollIntoView({
+          block: 'nearest',
+          inline: 'start',
+          behavior: reduceMotion ? 'auto' : 'smooth'
+        });
+      }
+    }
+  }
+
+  function addTocItem(tocEl, label, target) {
+    var item = document.createElement('div');
+    item.className = 'toc-item';
+    item.textContent = label;
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+    var jump = function () {
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var behavior = reduceMotion ? 'auto' : 'smooth';
+      if (target === viewProjectEl) {
+        viewProjectEl.scrollTo({ top: 0, behavior: behavior });
+      } else {
+        var offset = window.innerWidth <= 700 ? 80 : 140;
+        var containerRect = viewProjectEl.getBoundingClientRect();
+        var targetRect = target.getBoundingClientRect();
+        var delta = targetRect.top - containerRect.top;
+        var desiredTop = viewProjectEl.scrollTop + delta - offset;
+        viewProjectEl.scrollTo({ top: Math.max(0, desiredTop), behavior: behavior });
+      }
+    };
+    item.addEventListener('click', jump);
+    item.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        jump();
+      }
+    });
+    tocEl.appendChild(item);
+    toc.items.push(item);
+    toc.sections.push(target === viewProjectEl ? document.getElementById('project-title') : target);
+  }
+
+  function buildToc() {
+    var tocEl = document.getElementById('project-toc');
+    tocEl.innerHTML = '';
+    toc.items = [];
+    toc.sections = [];
+    addTocItem(tocEl, 'Start', viewProjectEl);
+    var h2s = document.querySelectorAll('#project-article .cs-h2');
+    h2s.forEach(function (h, i) {
+      h.id = 'sec-' + i;
+      addTocItem(tocEl, h.textContent, h);
+    });
+    updateTocHighlight();
+  }
+
+  function showProject(slug) {
+    var proj = PROJECTS[slug];
+    if (!proj) { location.hash = '#work'; return; }
+    document.getElementById('project-title').textContent = proj.title;
+    document.getElementById('project-lede').textContent = proj.lede;
+
+    var tagsEl = document.getElementById('project-tags');
+    tagsEl.innerHTML = '';
+    proj.tags.forEach(function (t) {
+      var span = document.createElement('span');
+      span.textContent = t;
+      tagsEl.appendChild(span);
+    });
+
+    var metaEl = document.getElementById('project-meta');
+    metaEl.innerHTML = '';
+    proj.meta.forEach(function (m) {
+      var item = document.createElement('div');
+      item.className = 'cs-meta-item';
+      var label = document.createElement('div');
+      label.className = 'cs-meta-label';
+      label.textContent = m.label;
+      var value = document.createElement('div');
+      value.className = 'cs-meta-value';
+      value.textContent = m.value;
+      item.appendChild(label);
+      item.appendChild(value);
+      metaEl.appendChild(item);
+    });
+
+    renderBlocks(document.getElementById('project-article'), proj.blocks);
+    viewProjectEl.scrollTop = 0;
+    buildToc();
+  }
+
+  function route() {
+    var hash = (location.hash || '#work').replace('#', '');
+    var parts = hash.split('/');
+    var view = parts[0] || 'work';
+
+    Object.keys(sections).forEach(function (key) {
+      sections[key].classList.remove('active');
+    });
+    navLinks.forEach(function (a) {
+      a.classList.remove('current');
+      a.classList.add('other');
+      a.removeAttribute('aria-current');
+    });
+
+    function markCurrent(view) {
+      var el = document.querySelector('[data-view="' + view + '"]');
+      el.classList.add('current');
+      el.classList.remove('other');
+      el.setAttribute('aria-current', 'page');
+    }
+
+    if (view === 'about') {
+      clearToc();
+      sections.about.classList.add('active');
+      sections.about.scrollTop = 0;
+      markCurrent('about');
+    } else if (view === 'work' && parts[1]) {
+      sections.project.classList.add('active');
+      showProject(parts[1]);
+      markCurrent('work');
+    } else {
+      clearToc();
+      sections.work.classList.add('active');
+      markCurrent('work');
+    }
+  }
+
+  window.addEventListener('hashchange', route);
+  route();
+
+  viewProjectEl.addEventListener('scroll', updateTocHighlight);
+
+  sections.work.addEventListener('wheel', function (e) {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    var atStart = filmstrip.scrollLeft <= 0 && e.deltaY < 0;
+    var atEnd = filmstrip.scrollLeft >= filmstrip.scrollWidth - filmstrip.clientWidth - 1 && e.deltaY > 0;
+    if (atStart || atEnd) return;
+    e.preventDefault();
+    filmstrip.scrollLeft += e.deltaY;
+  }, { passive: false });
+
+  var cursorDot = document.getElementById('cursor-dot');
+  var cursorLabel = document.getElementById('cursor-label');
+  var CURSOR_INTERACTIVE = 'a, [role="button"], .col, [tabindex]';
+  window.addEventListener('mousemove', function (e) {
+    cursorDot.classList.add('visible');
+    cursorDot.style.transform = 'translate3d(' + e.clientX + 'px,' + e.clientY + 'px,0) translate(-50%,-50%)';
+    cursorDot.classList.toggle('hover', !!(e.target && e.target.closest && e.target.closest(CURSOR_INTERACTIVE)));
+    var overEmail = !!(e.target && e.target.closest && e.target.closest('#email-copy'));
+    cursorDot.classList.toggle('suppressed', overEmail);
+    cursorLabel.style.transform = 'translate3d(' + e.clientX + 'px,' + e.clientY + 'px,0) translate(-50%,-50%)';
+    cursorLabel.classList.toggle('visible', overEmail);
+  });
+  window.addEventListener('mouseleave', function () {
+    cursorDot.classList.remove('visible');
+    cursorLabel.classList.remove('visible');
+  });
+
+  var emailEl = document.getElementById('email-copy');
+  var emailOriginal = emailEl.textContent;
+  var emailResetTimer;
+  var copyAnnounceEl = document.getElementById('copy-announce');
+
+  function copyEmail() {
+    var text = emailOriginal;
+
+    function fallbackCopy() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      allowInternalCopy = true;
+      try { document.execCommand('copy'); } catch (err) {}
+      allowInternalCopy = false;
+      document.body.removeChild(ta);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+
+    clearTimeout(emailResetTimer);
+    cursorLabel.textContent = 'Copied';
+    copyAnnounceEl.textContent = 'Email address copied';
+    emailResetTimer = setTimeout(function () {
+      cursorLabel.textContent = 'Copy';
+      copyAnnounceEl.textContent = '';
+    }, 1200);
+  }
+
+  emailEl.addEventListener('click', copyEmail);
+  emailEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      copyEmail();
+    }
+  });
+</script>
