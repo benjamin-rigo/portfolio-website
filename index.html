@@ -459,6 +459,23 @@
     color: var(--ink-dim);
   }
 
+  .cs-image {
+    margin: 28px 0 36px 0;
+  }
+
+  .cs-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .cs-image-caption {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-dim);
+    margin-top: 10px;
+  }
+
   .cs-stats {
     display: flex;
     flex-wrap: wrap;
@@ -915,6 +932,7 @@
   function visual(text) { return { t: 'placeholder', label: 'Visual placeholder', text: text }; }
   function pending(text) { return { t: 'placeholder', label: 'Pending', text: text }; }
   function stats(items) { return { t: 'stats', items: items }; }
+  function image(src, caption) { return { t: 'image', src: src, caption: caption }; }
 
   var PROJECTS = {
     'nxlog-platform': {
@@ -927,7 +945,7 @@
       ],
       lede: `I led product design across four core feature areas of NXLog Platform, an on-premises log management tool for security and IT teams, as an Atlas, Rise! engagement, leading two mid-level designers through architecture revision and redesign work grounded in real, ongoing product requests rather than internal assumptions.`,
       blocks: [
-        visual(`Hero shot — a composite of one strong screen from each of the four features (the log search table, the template assignment view, the Log Flow Editor canvas, the configuration builder), to establish scope at a glance before the reader starts reading.`),
+        image('images/nxlog/01.png', 'Log Flow Editor, configuration builder, log search, and template assignment — the four core areas covered below.'),
         h2('Challenge'),
         p(`NXLog Platform is an on-premises solution for centralized log management, used by security and IT teams to collect, process, and analyze log data at scale, and by the time I joined several of its core surfaces had grown past what their original design could support: search assumed a schema the underlying data didn't actually have, agent-to-template assignment had outgrown a one-to-one model, pipeline configuration only existed as text, and the configuration builder needed to represent both plan tiers and multi-step SIEM integrations it was never built for. I led the redesign across all four areas, together with two mid-level designers working under me.`),
         h2('Approach'),
@@ -1205,6 +1223,21 @@
         v.appendChild(label);
         v.appendChild(desc);
         container.appendChild(v);
+      } else if (b.t === 'image') {
+        var fig = document.createElement('figure');
+        fig.className = 'cs-image';
+        var img = document.createElement('img');
+        img.src = b.src;
+        img.alt = b.caption || '';
+        img.loading = 'lazy';
+        fig.appendChild(img);
+        if (b.caption) {
+          var figcap = document.createElement('figcaption');
+          figcap.className = 'cs-image-caption';
+          figcap.textContent = b.caption;
+          fig.appendChild(figcap);
+        }
+        container.appendChild(fig);
       } else if (b.t === 'stats') {
         var grid = document.createElement('div');
         grid.className = 'cs-stats';
