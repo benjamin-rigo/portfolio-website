@@ -577,6 +577,21 @@
     margin: 4px 0 10px 0;
   }
 
+  /* ---- About page: two columns once there's genuinely enough width
+     for it (a wide laptop or external monitor) — Competencies/Education/
+     Sidequests as a compact left column, Professional Experience as the
+     main right column at roughly its old single-column reading width. ---- */
+  @media (min-width: 1300px) {
+    .about-body { max-width: 1080px; }
+
+    .about-columns {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 72px;
+      align-items: start;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     #cursor-dot, #cursor-label, .col { transition: none; }
     html { scroll-behavior: auto; }
@@ -762,107 +777,113 @@
             <li>Advanced AI workflows (Claude Code, Claude-to-Figma automation) to accelerate research synthesis, prototyping, and engineering handoff</li>
           </ul>
 
-          <h2>Core Competencies</h2>
+          <div class="about-columns">
+            <div class="about-col-left">
+              <h2>Core Competencies</h2>
 
-          <h3>Product Strategy &amp; Complex Interfaces</h3>
-          <ul>
-            <li><strong>UX/UI Design &amp; Systems:</strong> Complex web/app interfaces, native iOS/Android, data-heavy dashboards, tokenized design systems (shadcn/ui, Figma variables).</li>
-            <li><strong>Service Design &amp; Discovery:</strong> Service blueprinting, product concept workshops, user journey mapping, and research frameworks.</li>
-            <li><strong>Usability Testing &amp; Research:</strong> Qualitative/quantitative research frameworks, iterative usability testing, field research, and validation.</li>
-            <li><strong>Cross-Functional Collaboration:</strong> Direct engineering handoff, component mapping, technical feasibility assessment, and QA.</li>
-          </ul>
+              <h3>Product Strategy &amp; Complex Interfaces</h3>
+              <ul>
+                <li><strong>UX/UI Design &amp; Systems:</strong> Complex web/app interfaces, native iOS/Android, data-heavy dashboards, tokenized design systems (shadcn/ui, Figma variables).</li>
+                <li><strong>Service Design &amp; Discovery:</strong> Service blueprinting, product concept workshops, user journey mapping, and research frameworks.</li>
+                <li><strong>Usability Testing &amp; Research:</strong> Qualitative/quantitative research frameworks, iterative usability testing, field research, and validation.</li>
+                <li><strong>Cross-Functional Collaboration:</strong> Direct engineering handoff, component mapping, technical feasibility assessment, and QA.</li>
+              </ul>
 
-          <h3>Leadership &amp; Operations</h3>
-          <ul>
-            <li><strong>Design Leadership:</strong> Mentoring and managing teams of 3–5 mid-to-senior designers.</li>
-            <li><strong>Project &amp; Proposal Strategy:</strong> Scope definition, project planning, proposal writing, and client alignment.</li>
-          </ul>
+              <h3>Leadership &amp; Operations</h3>
+              <ul>
+                <li><strong>Design Leadership:</strong> Mentoring and managing teams of 3–5 mid-to-senior designers.</li>
+                <li><strong>Project &amp; Proposal Strategy:</strong> Scope definition, project planning, proposal writing, and client alignment.</li>
+              </ul>
 
-          <h3>Next-Gen Workflows &amp; Specialized Skills</h3>
-          <ul>
-            <li><strong>AI-Assisted Design &amp; Dev Prep:</strong> Advanced Claude Code integration, Figma-Claude workflows.</li>
-            <li><strong>Brand &amp; Visual Communication:</strong> Brand strategy, visual identity, graphic design, and motion graphics.</li>
-            <li><strong>Hardware &amp; Spatial Ergonomics:</strong> Experience in physical/spatial interface ergonomics (visionOS, PHID).</li>
-          </ul>
+              <h3>Next-Gen Workflows &amp; Specialized Skills</h3>
+              <ul>
+                <li><strong>AI-Assisted Design &amp; Dev Prep:</strong> Advanced Claude Code integration, Figma-Claude workflows.</li>
+                <li><strong>Brand &amp; Visual Communication:</strong> Brand strategy, visual identity, graphic design, and motion graphics.</li>
+                <li><strong>Hardware &amp; Spatial Ergonomics:</strong> Experience in physical/spatial interface ergonomics (visionOS, PHID).</li>
+              </ul>
 
-          <h2>Professional Experience</h2>
+              <h2>Education</h2>
+              <ul>
+                <li>Master of Arts (MA) — Media Design, MOME · 2017 – 2019</li>
+                <li>Erasmus Program — Media Design, Faculdade de Belas-Artes da Universidade de Lisboa · 2018</li>
+                <li>Bachelor of Arts (BA) — Media Design, MOME · 2015 – 2017</li>
+                <li>Audio Engineering Degree · 2014</li>
+              </ul>
 
-          <div class="role">
-            <div class="role-head">
-              <div class="role-title">Lead Product Designer</div>
-              <div class="role-dates">Jan 2024 – Present</div>
+              <h2>Sidequests</h2>
+              <ul>
+                <li>Electronic Music Production</li>
+                <li>Visiting Lecturer (BME) — Teaching electronic music production and sound design principles at the Department of Sociology and Communication.</li>
+                <li>Surf</li>
+              </ul>
             </div>
-            <div class="role-company">Atlas, Rise! · Budapest, Hungary</div>
-            <ul>
-              <li>Led end-to-end product design, service design, and UX strategy for enterprise and public-sector clients (e.g., BKK Pay&amp;GO, a global card network).</li>
-              <li>Managed and mentored a team of 3–5 mid-to-senior designers across research, branding, and interface design streams.</li>
-              <li>Facilitated client discovery workshops, scoped proposals, and designed low-carbon digital products.</li>
-            </ul>
-          </div>
 
-          <div class="role">
-            <div class="role-head">
-              <div class="role-title">Product Designer</div>
-              <div class="role-dates">Oct 2022 – Sep 2023</div>
+            <div class="about-col-right">
+              <h2>Professional Experience</h2>
+
+              <div class="role">
+                <div class="role-head">
+                  <div class="role-title">Lead Product Designer</div>
+                  <div class="role-dates">Jan 2024 – Present</div>
+                </div>
+                <div class="role-company">Atlas, Rise! · Budapest, Hungary</div>
+                <ul>
+                  <li>Led end-to-end product design, service design, and UX strategy for enterprise and public-sector clients (e.g., BKK Pay&amp;GO, a global card network).</li>
+                  <li>Managed and mentored a team of 3–5 mid-to-senior designers across research, branding, and interface design streams.</li>
+                  <li>Facilitated client discovery workshops, scoped proposals, and designed low-carbon digital products.</li>
+                </ul>
+              </div>
+
+              <div class="role">
+                <div class="role-head">
+                  <div class="role-title">Product Designer</div>
+                  <div class="role-dates">Oct 2022 – Sep 2023</div>
+                </div>
+                <div class="role-company">AR Analytics Ltd. · Budapest, Hungary</div>
+                <ul>
+                  <li>Led augmented reality platform design and spatial UI frameworks tailored for Apple's visionOS.</li>
+                  <li>Established the core visionOS design system and spatial interaction patterns for the platform.</li>
+                  <li>Partnered with the BME Ergonomics Institute to execute academic-grade design research and spatial usability testing.</li>
+                </ul>
+              </div>
+
+              <div class="role">
+                <div class="role-head">
+                  <div class="role-title">Product Designer</div>
+                  <div class="role-dates">Nov 2019 – Mar 2023</div>
+                </div>
+                <div class="role-company">Frontira (formerly LHBS) · Budapest, Hungary</div>
+                <ul>
+                  <li>Delivered end-to-end product design, web/mobile application structures, and design systems for enterprise clients.</li>
+                  <li>Led qualitative UX research, usability testing rounds, and service blueprinting to align business strategy with user touchpoints.</li>
+                </ul>
+              </div>
+
+              <div class="role">
+                <div class="role-head">
+                  <div class="role-title">UX Designer</div>
+                  <div class="role-dates">Feb 2019 – Jan 2021</div>
+                </div>
+                <div class="role-company">Moholy-Nagy University of Art and Design (MOME) · Budapest, Hungary</div>
+                <ul>
+                  <li>Designed the physical-human interface (PHID) and digital UI ecosystem for a smart furniture product line.</li>
+                  <li>Focused on spatial ergonomics, physical interaction feedback, physical usability testing, and embedded system UX.</li>
+                </ul>
+              </div>
+
+              <div class="role">
+                <div class="role-head">
+                  <div class="role-title">UX Designer Intern</div>
+                  <div class="role-dates">Jul 2016 – Aug 2016</div>
+                </div>
+                <div class="role-company">Mito · Budapest, Hungary</div>
+                <ul>
+                  <li>Worked within Mito's UX/Design department and learned agency workflows.</li>
+                  <li>Created user flows, personas, and interactive wireframe prototypes using Axure and Sketch.</li>
+                </ul>
+              </div>
             </div>
-            <div class="role-company">AR Analytics Ltd. · Budapest, Hungary</div>
-            <ul>
-              <li>Led augmented reality platform design and spatial UI frameworks tailored for Apple's visionOS.</li>
-              <li>Established the core visionOS design system and spatial interaction patterns for the platform.</li>
-              <li>Partnered with the BME Ergonomics Institute to execute academic-grade design research and spatial usability testing.</li>
-            </ul>
           </div>
-
-          <div class="role">
-            <div class="role-head">
-              <div class="role-title">Product Designer</div>
-              <div class="role-dates">Nov 2019 – Mar 2023</div>
-            </div>
-            <div class="role-company">Frontira (formerly LHBS) · Budapest, Hungary</div>
-            <ul>
-              <li>Delivered end-to-end product design, web/mobile application structures, and design systems for enterprise clients.</li>
-              <li>Led qualitative UX research, usability testing rounds, and service blueprinting to align business strategy with user touchpoints.</li>
-            </ul>
-          </div>
-
-          <div class="role">
-            <div class="role-head">
-              <div class="role-title">UX Designer</div>
-              <div class="role-dates">Feb 2019 – Jan 2021</div>
-            </div>
-            <div class="role-company">Moholy-Nagy University of Art and Design (MOME) · Budapest, Hungary</div>
-            <ul>
-              <li>Designed the physical-human interface (PHID) and digital UI ecosystem for a smart furniture product line.</li>
-              <li>Focused on spatial ergonomics, physical interaction feedback, physical usability testing, and embedded system UX.</li>
-            </ul>
-          </div>
-
-          <div class="role">
-            <div class="role-head">
-              <div class="role-title">UX Designer Intern</div>
-              <div class="role-dates">Jul 2016 – Aug 2016</div>
-            </div>
-            <div class="role-company">Mito · Budapest, Hungary</div>
-            <ul>
-              <li>Worked within Mito's UX/Design department and learned agency workflows.</li>
-              <li>Created user flows, personas, and interactive wireframe prototypes using Axure and Sketch.</li>
-            </ul>
-          </div>
-
-          <h2>Education</h2>
-          <ul>
-            <li>Master of Arts (MA) — Media Design, MOME · 2017 – 2019</li>
-            <li>Erasmus Program — Media Design, Faculdade de Belas-Artes da Universidade de Lisboa · 2018</li>
-            <li>Bachelor of Arts (BA) — Media Design, MOME · 2015 – 2017</li>
-            <li>Audio Engineering Degree · 2014</li>
-          </ul>
-
-          <h2>Sidequests</h2>
-          <ul>
-            <li>Electronic Music Production</li>
-            <li>Visiting Lecturer (BME) — Teaching electronic music production and sound design principles at the Department of Sociology and Communication.</li>
-            <li>Surf</li>
-          </ul>
         </div>
         </div>
         <div class="bottom-blur-veil"><div class="bottom-blur-veil-inner"></div></div>
