@@ -501,7 +501,7 @@
   }
 
   .about-body {
-    max-width: 640px;
+    max-width: none;
   }
 
   .about-body p {
@@ -581,12 +581,11 @@
      tier (matches the existing 1150px tablet/desktop boundary above) —
      Competencies/Education/Sidequests on the left, Professional
      Experience on the right, fluid and evenly split like the case
-     study content. Below this, the single narrow 640px column was
-     leaving a large dead gap on anything wider than a tablet, which
-     read as broken rather than intentional. ---- */
+     study content. .about-body itself is fluid (max-width: none) at
+     every width now — see the base rule above — so there's no dead
+     gap in the tablet tier either; this query only turns on the
+     two-column grid once there's room for it. ---- */
   @media (min-width: 1151px) {
-    .about-body { max-width: none; }
-
     .about-columns {
       display: grid;
       grid-template-columns: 1fr 1fr;
