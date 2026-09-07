@@ -577,11 +577,14 @@
     margin: 4px 0 10px 0;
   }
 
-  /* ---- About page: two columns once there's genuinely enough width
-     for it (a wide laptop or external monitor) — Competencies/Education/
-     Sidequests on the left, Professional Experience on the right, fluid
-     and evenly split like the case study content rather than capped. ---- */
-  @media (min-width: 1300px) {
+  /* ---- About page: two columns as soon as we're out of the tablet
+     tier (matches the existing 1150px tablet/desktop boundary above) —
+     Competencies/Education/Sidequests on the left, Professional
+     Experience on the right, fluid and evenly split like the case
+     study content. Below this, the single narrow 640px column was
+     leaving a large dead gap on anything wider than a tablet, which
+     read as broken rather than intentional. ---- */
+  @media (min-width: 1151px) {
     .about-body { max-width: none; }
 
     .about-columns {
