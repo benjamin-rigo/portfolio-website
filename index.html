@@ -579,14 +579,14 @@
 
   /* ---- About page: two columns once there's genuinely enough width
      for it (a wide laptop or external monitor) — Competencies/Education/
-     Sidequests as a compact left column, Professional Experience as the
-     main right column at roughly its old single-column reading width. ---- */
+     Sidequests on the left, Professional Experience on the right, fluid
+     and evenly split like the case study content rather than capped. ---- */
   @media (min-width: 1300px) {
-    .about-body { max-width: 1080px; }
+    .about-body { max-width: none; }
 
     .about-columns {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 72px;
       align-items: start;
     }
