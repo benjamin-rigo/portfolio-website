@@ -238,9 +238,9 @@
 
   .intro {
     font-family: var(--font);
-    max-width: 560px;
-    font-size: 22px;
-    line-height: 1.35;
+    max-width: 640px;
+    font-size: 30px;
+    line-height: 1.15;
     font-weight: 500;
     letter-spacing: -0.005em;
     color: var(--ink);
@@ -360,21 +360,35 @@
     font-weight: 600;
     line-height: 1.08;
     letter-spacing: -0.015em;
-    max-width: 20ch;
+    max-width: 780px;
     margin: 0;
   }
 
   #project-tags.tags { margin: 20px 0 0 0; }
   #project-tags.tags span { background: var(--ink); color: var(--bg); }
 
+  /* Three meta fields, always in this order (Duration, Role, Scope) —
+     sized for what they actually hold instead of one generic cap.
+     Duration and Role are short, so they just take their natural
+     content width; Scope is a full sentence and needs the room, so
+     it gets the remaining space (and wraps at a readable line length)
+     instead of being squeezed into the same 240px box as the other
+     two, with empty page to its right. Flexbox rather than a rigid
+     grid so this degrades gracefully at in-between widths — Scope
+     drops to its own full-width line instead of forcing overflow. */
   .cs-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 40px;
+    gap: 16px 48px;
     margin: 36px 0 40px 0;
   }
 
-  .cs-meta-item { max-width: 240px; }
+  .cs-meta-item { max-width: none; }
+
+  .cs-meta-item:last-child {
+    flex: 1 1 320px;
+    max-width: 62ch;
+  }
 
   .cs-meta-label {
     font-family: var(--font);
@@ -670,7 +684,8 @@
     }
 
     .intro {
-      font-size: 19px;
+      font-size: 22px;
+      line-height: 1.25;
       margin: 40px 20px 0 20px;
     }
 
@@ -721,7 +736,15 @@
     .cs-h2 { font-size: 22px; margin: 48px 0 14px 0; }
     .cs-h3 { font-size: 17px; }
 
-    .cs-meta { gap: 24px; margin: 24px 0 28px 0; }
+    .cs-meta {
+      gap: 20px 24px;
+      margin: 24px 0 28px 0;
+    }
+
+    .cs-meta-item:last-child {
+      flex-basis: 100%;
+      max-width: none;
+    }
     .cs-stats { gap: 24px; }
     .cs-stat-value { font-size: 24px; }
 
